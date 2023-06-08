@@ -51,6 +51,7 @@ cross_pmem_dist=28
 cxl_addr="0x4c00000000"
 cxl_backend_size="512M"
 cxl_t3_size="256M"
+cxl_dcd_size="4G"
 cxl_label_size="1K"
 
 num_build_cpus="$(($(getconf _NPROCESSORS_ONLN) + 1))"
@@ -1061,6 +1062,11 @@ setup_cxl()
 	qcmd+=("-object" "memory-backend-file,id=cxl-mem2,share=on,mem-path=cxltest2.raw,size=$cxl_t3_size")
 	qcmd+=("-object" "memory-backend-file,id=cxl-mem3,share=on,mem-path=cxltest3.raw,size=$cxl_t3_size")
 
+	qcmd+=("-object" "memory-backend-file,id=cxl-dc-mem0,share=on,mem-path=cxltest4.raw,size=$cxl_dcd_size")
+	qcmd+=("-object" "memory-backend-file,id=cxl-dc-mem1,share=on,mem-path=cxltest5.raw,size=$cxl_dcd_size")
+	qcmd+=("-object" "memory-backend-file,id=cxl-dc-mem2,share=on,mem-path=cxltest6.raw,size=$cxl_dcd_size")
+	qcmd+=("-object" "memory-backend-file,id=cxl-dc-mem3,share=on,mem-path=cxltest7.raw,size=$cxl_dcd_size")
+
 	# Each device needs its own LSA
 	qcmd+=("-object" "memory-backend-file,id=cxl-lsa0,share=on,mem-path=lsa0.raw,size=$cxl_label_size")
 	qcmd+=("-object" "memory-backend-file,id=cxl-lsa1,share=on,mem-path=lsa1.raw,size=$cxl_label_size")
@@ -1078,10 +1084,12 @@ setup_cxl()
 	qcmd+=("-device" "cxl-rp,id=hb1rp1,bus=cxl.1,chassis=0,slot=3,port=1")
 
 	# Create the devices
-	qcmd+=("-device" "cxl-type3,bus=hb0rp0,memdev=cxl-mem0,id=cxl-dev0,lsa=cxl-lsa0")
-	qcmd+=("-device" "cxl-type3,bus=hb0rp1,memdev=cxl-mem1,id=cxl-dev1,lsa=cxl-lsa1")
-	qcmd+=("-device" "cxl-type3,bus=hb1rp0,memdev=cxl-mem2,id=cxl-dev2,lsa=cxl-lsa2")
-	qcmd+=("-device" "cxl-type3,bus=hb1rp1,memdev=cxl-mem3,id=cxl-dev3,lsa=cxl-lsa3")
+	qcmd+=("-device" "cxl-type3,bus=hb0rp0,memdev=cxl-mem0,num-dc-regions=2,nonvolatile-dc-memdev=cxl-dc-mem0,id=cxl-dev0,lsa=cxl-lsa0")
+	qcmd+=("-device" "cxl-type3,bus=hb0rp1,memdev=cxl-mem1,num-dc-regions=2,nonvolatile-dc-memdev=cxl-dc-mem1,id=cxl-dev1,lsa=cxl-lsa1")
+	#qcmd+=("-device" "cxl-type3,bus=hb1rp0,memdev=cxl-mem2,id=cxl-dev2,lsa=cxl-lsa2")
+	#qcmd+=("-device" "cxl-type3,bus=hb1rp1,memdev=cxl-mem3,id=cxl-dev3,lsa=cxl-lsa3")
+	qcmd+=("-device" "cxl-type3,bus=hb1rp0,memdev=cxl-mem2,num-dc-regions=2,nonvolatile-dc-memdev=cxl-dc-mem2,id=cxl-dev2,lsa=cxl-lsa2")
+	qcmd+=("-device" "cxl-type3,bus=hb1rp1,memdev=cxl-mem3,num-dc-regions=2,nonvolatile-dc-memdev=cxl-dc-mem3,id=cxl-dev3,lsa=cxl-lsa3")
 
 	# Finally, the CFMWS entries
 	declare -a cfmws_params
