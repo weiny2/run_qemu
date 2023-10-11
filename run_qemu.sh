@@ -1164,6 +1164,10 @@ setup_cxl()
 	qcmd+=("-device" "cxl-downstream,port=3,bus=cxl-up0,id=swport3,chassis=0,slot=8")
 
 	# Create pmem and volatile devices
+	# Serial number must corespond to the id name for corespondence between
+	# qmp commands and the system in tests
+	# ie: X must be equal in: sn=pX id=cxl-pmemX
+	# ie: X must be equal in: sn=vX id=cxl-vmemX
 	for (( i = 0; i < 4; i++ )); do
 		if ((i < 2)); then
 			bus_str="bus=hb$((i/2))rp$((i%2))"
@@ -1174,9 +1178,11 @@ setup_cxl()
 		if (( i < num_cxl_pmems )); then
 			mem_str="persistent-memdev=cxl-mem$i"
 			id_str="id=cxl-pmem$i"
+			sn_str="sn=p$i"
 		else
 			mem_str="volatile-memdev=cxl-mem$i"
 			id_str="id=cxl-vmem$i"
+			sn_str="sn=v$i"
 		fi
 		qcmd+=("-device" "cxl-type3,num-dc-regions=2,$bus_str,$mem_str,$id_str,$lsa_str")
 	done
@@ -1189,6 +1195,14 @@ setup_cxl()
 #	#qcmd+=("-device" "cxl-type3,bus=hb1rp1,memdev=cxl-mem3,id=cxl-dev3,lsa=cxl-lsa3")
 #	qcmd+=("-device" "cxl-type3,bus=hb1rp0,memdev=cxl-mem2,num-dc-regions=2,nonvolatile-dc-memdev=cxl-dc-mem2,id=cxl-dev2,lsa=cxl-lsa2")
 #	qcmd+=("-device" "cxl-type3,bus=hb1rp1,memdev=cxl-mem3,num-dc-regions=2,nonvolatile-dc-memdev=cxl-dc-mem3,id=cxl-dev3,lsa=cxl-lsa3")
+
+# Old version.
+#	qcmd+=("-device" "cxl-type3,bus=hb0rp0,memdev=cxl-mem0,num-dc-regions=2,nonvolatile-dc-memdev=cxl-dc-mem0,id=cxl-dev0,lsa=cxl-lsa0,sn=0")
+#	qcmd+=("-device" "cxl-type3,bus=hb0rp1,memdev=cxl-mem1,num-dc-regions=2,nonvolatile-dc-memdev=cxl-dc-mem1,id=cxl-dev1,lsa=cxl-lsa1,sn=1")
+#	#qcmd+=("-device" "cxl-type3,bus=hb1rp0,memdev=cxl-mem2,id=cxl-dev2,lsa=cxl-lsa2"
+#	#qcmd+=("-device" "cxl-type3,bus=hb1rp1,memdev=cxl-mem3,id=cxl-dev3,lsa=cxl-lsa3")
+#	qcmd+=("-device" "cxl-type3,bus=hb1rp0,memdev=cxl-mem2,num-dc-regions=2,nonvolatile-dc-memdev=cxl-dc-mem2,id=cxl-dev2,lsa=cxl-lsa2,sn=2")
+#	qcmd+=("-device" "cxl-type3,bus=hb1rp1,memdev=cxl-mem3,num-dc-regions=2,nonvolatile-dc-memdev=cxl-dc-mem3,id=cxl-dev3,lsa=cxl-lsa3,sn=3")
 
 	# Finally, the CFMWS entries
 	declare -a cfmws_params

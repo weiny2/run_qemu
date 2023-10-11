@@ -1,0 +1,37 @@
+# SPDX-License-Identifier: GPL-2.0
+# Copyright (C) 2023 Intel Corporation. All rights reserved.
+
+# err
+# $1: line number which error detected
+err()
+{
+	echo $(basename $0): failed at line $1
+	exit 1
+}
+
+inject_extent()
+{
+	dev="cxl-dev${1}"
+	region_id="$2"
+	offset="$3" # in MB
+	length="$4" # in MB
+	tag="$5"
+
+	cmd="{ 'execute': 'qmp_capabilities' }{ 'execute': 'cxl-add-dynamic-capacity', 'arguments': { 'path': '${dev}', 'extents': [ { 'region-id': ${region_id}, 'dpa': ${offset}, 'len': ${length} } ] } }"
+	echo $cmd
+	echo ${cmd} | socat STDIO UNIX:/tmp/run_qemu_qmp_0
+}
+
+remove_extent()
+{
+	dev="cxl-dev${1}"
+	region_id="$2"
+	offset="$3" # in MB
+	length="$4" # in MB
+
+	cmd="{ 'execute': 'qmp_capabilities' }{ 'execute': 'cxl-release-dynamic-capacity', 'arguments': { 'path': '${dev}', 'extents': [ { 'region-id': ${region_id}, 'dpa': ${offset}, 'len': ${length} } ] } }"
+	echo $cmd
+	echo ${cmd} | socat STDIO UNIX:/tmp/run_qemu_qmp_0
+}
+
+
