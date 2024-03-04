@@ -15,7 +15,7 @@ cxl_dev_path="/sys/bus/cxl/devices"
 
 # a test tag in MB
 test_dc_region_id=0
-test_ext_offset=(0 256)
+test_ext_offset=(0 64)
 test_ext_length=(128 256)
 test_tag=dc-test-tag
 
@@ -107,6 +107,18 @@ check_dax_dev()
 	fi
 }
 
+check_not_dax_dev()
+{
+	reg="$1"
+	search="$2"
+
+	result=$(guest_cmd "$DAXCTL" "list" "-r" "$reg" "-D" "|" "jq" "-er" "'.[].chardev'")
+	if [ "$result" == "$search" ]; then
+		echo "FAIL found $result"
+		err "$LINENO"
+	fi
+}
+
 destroy_dax_dev()
 {
 	dev="$1"
@@ -155,9 +167,15 @@ check_dax_dev ${dax_dev} ${test_ext_length[0]}
 
 # Remove the pre-created test extent out from under dax device
 # stack should hold ref until dax device deleted
+echo ""
+echo "Test: Remove pre-created test extent"
+echo ""
 remove_extent ${serial} ${test_dc_region_id} ${test_ext_offset[0]} ${test_ext_length[0]}
 
+check_extent_cnt ${region} 1
+
 destroy_dax_dev ${dax_dev}
+check_not_dax_dev ${dax_dev}
 check_extent_cnt ${region} 0
 
 
