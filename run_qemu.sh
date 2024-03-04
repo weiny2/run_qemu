@@ -1132,6 +1132,7 @@ setup_cxl()
 	qcmd+=("-object" "memory-backend-file,id=cxl-mem2,share=on,mem-path=cxltest2.raw,size=$cxl_t3_size")
 	qcmd+=("-object" "memory-backend-file,id=cxl-mem3,share=on,mem-path=cxltest3.raw,size=$cxl_t3_size")
 
+	# DCD backends
 	qcmd+=("-object" "memory-backend-file,id=cxl-dc-mem0,share=on,mem-path=cxltest4.raw,size=$cxl_dcd_size")
 	qcmd+=("-object" "memory-backend-file,id=cxl-dc-mem1,share=on,mem-path=cxltest5.raw,size=$cxl_dcd_size")
 	qcmd+=("-object" "memory-backend-file,id=cxl-dc-mem2,share=on,mem-path=cxltest6.raw,size=$cxl_dcd_size")
@@ -1178,13 +1179,13 @@ setup_cxl()
 		if (( i < num_cxl_pmems )); then
 			mem_str="persistent-memdev=cxl-mem$i"
 			id_str="id=cxl-pmem$i"
-			sn_str="sn=p$i"
 		else
 			mem_str="volatile-memdev=cxl-mem$i"
 			id_str="id=cxl-vmem$i"
-			sn_str="sn=v$i"
 		fi
-		qcmd+=("-device" "cxl-type3,num-dc-regions=2,$bus_str,$mem_str,$id_str,$lsa_str")
+		sn_str="sn=$i"
+		dcd_str="num-dc-regions=2,volatile-dc-memdev=cxl-dc-mem$i"
+		qcmd+=("-device" "cxl-type3,$bus_str,$mem_str,$dcd_str,$id_str,$lsa_str,$sn_str")
 	done
 
 # Old DC additions.
