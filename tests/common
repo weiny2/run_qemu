@@ -11,25 +11,25 @@ err()
 
 inject_extent()
 {
-	dev="cxl-dev${1}"
+	dev="cxl-vmem${1}"
 	region_id="$2"
 	offset="$3" # in MB
 	length="$4" # in MB
 	tag="$5"
 
-	cmd="{ 'execute': 'qmp_capabilities' }{ 'execute': 'cxl-add-dynamic-capacity', 'arguments': { 'path': '${dev}', 'extents': [ { 'region-id': ${region_id}, 'dpa': ${offset}, 'len': ${length} } ] } }"
+	cmd="{ 'execute': 'qmp_capabilities' }{ 'execute': 'cxl-add-dynamic-capacity', 'arguments': { 'path': '${dev}', 'region-id': ${region_id}, 'extents': [ { 'offset': ${offset}, 'len': ${length} } ] } }"
 	echo $cmd
 	echo ${cmd} | socat STDIO UNIX:/tmp/run_qemu_qmp_0
 }
 
 remove_extent()
 {
-	dev="cxl-dev${1}"
+	dev="cxl-vmem${1}"
 	region_id="$2"
 	offset="$3" # in MB
 	length="$4" # in MB
 
-	cmd="{ 'execute': 'qmp_capabilities' }{ 'execute': 'cxl-release-dynamic-capacity', 'arguments': { 'path': '${dev}', 'extents': [ { 'region-id': ${region_id}, 'dpa': ${offset}, 'len': ${length} } ] } }"
+	cmd="{ 'execute': 'qmp_capabilities' }{ 'execute': 'cxl-release-dynamic-capacity', 'arguments': { 'path': '${dev}', 'region-id': ${region_id}, 'extents': [ { 'offset': ${offset}, 'len': ${length} } ] } }"
 	echo $cmd
 	echo ${cmd} | socat STDIO UNIX:/tmp/run_qemu_qmp_0
 }

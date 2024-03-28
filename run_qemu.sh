@@ -1207,13 +1207,13 @@ setup_cxl()
 	for (( i = 0; i < 4; i++ )); do
 		bus_str="bus=swport$((i*2))"
 		lsa_str="lsa=cxl-lsa$i"
-		if (( i < num_cxl_pmems )); then
-			mem_str="persistent-memdev=cxl-mem$i"
-			id_str="id=cxl-pmem$i"
-		else
+#		if (( i < num_cxl_pmems )); then
+#			mem_str="persistent-memdev=cxl-mem$i"
+#			id_str="id=cxl-pmem$i"
+#		else
 			mem_str="volatile-memdev=cxl-mem$i"
 			id_str="id=cxl-vmem$i"
-		fi
+#		fi
 		sn_str="sn=$i"
 		dcd_str="num-dc-regions=2,volatile-dc-memdev=cxl-dc-mem$i"
 		qcmd+=("-device" "cxl-type3,$bus_str,$mem_str,$dcd_str,$id_str,$lsa_str,$sn_str")
