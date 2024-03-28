@@ -13,10 +13,10 @@ CXL=/root/ndctl/build/cxl/cxl
 DAXCTL=/root/ndctl/build/daxctl/daxctl
 cxl_dev_path="/sys/bus/cxl/devices"
 
-# a test tag in MB
+# a test tag in Bytes
 test_dc_region_id=0
-test_ext_offset=(0 64)
-test_ext_length=(128 256)
+test_ext_offset=(0 134217728)
+test_ext_length=(67108864  301989888)
 test_tag=dc-test-tag
 
 mem=""
@@ -75,6 +75,17 @@ check_region()
 	echo "TEST: region:${result}"
 }
 
+check_not_region()
+{
+	search=$1
+
+	result=$($CXL list -r "$search" | jq -r ".[].region")
+	if [ "$result" == "$search" ]; then
+		echo "check not region failed; $search found"
+		err "$LINENO"
+	fi
+}
+
 destroy_region()
 {
 	region=$1
@@ -94,7 +105,7 @@ check_dax_dev()
 {
 	search="$1"
 	size="$2"
-	let size=$((size * 1024 * 1024))
+	#let size=$((size * 1024 * 1024))
 	result=$(guest_cmd "$DAXCTL" "list" "-d" "$search" "|" "jq" "-er" "'.[].chardev'")
 	if [ "$result" != "$search" ]; then
 		echo "check dax device failed to find $search"
@@ -129,8 +140,10 @@ destroy_dax_dev()
 
 
 # main()
-#guest_cmd 'modprobe' '-r' 'cxl_test'
-#guest_cmd 'modprobe' 'cxl_test'
+guest_cmd 'modprobe' '-r' 'cxl_test'
+guest_cmd 'modprobe' 'cxl_acpi'
+guest_cmd 'modprobe' 'cxl_port'
+guest_cmd 'modprobe' 'cxl_mem'
 
 readarray -t memdevs < <(guest_cmd "${CXL}" 'list' '-b' 'ACPI.CXL' '-Mi' '|' "jq" "-r" "'.[].memdev'")
 for mem in ${memdevs[@]}; do
@@ -173,9 +186,14 @@ echo ""
 remove_extent ${serial} ${test_dc_region_id} ${test_ext_offset[0]} ${test_ext_length[0]}
 
 check_extent_cnt ${region} 1
+check_dax_dev ${dax_dev} ${test_ext_length[0]}
 
 destroy_dax_dev ${dax_dev}
-check_not_dax_dev ${dax_dev}
+check_not_dax_dev ${region} ${dax_dev}
+
+check_extent_cnt ${region} 1
+
+remove_extent ${serial} ${test_dc_region_id} ${test_ext_offset[0]} ${test_ext_length[0]}
 check_extent_cnt ${region} 0
 
 
@@ -193,6 +211,7 @@ check_extent_cnt ${region} 2
 remove_extent ${serial} ${test_dc_region_id} ${test_ext_offset[1]} ${test_ext_length[1]}
 check_extent_cnt ${region} 2
 destroy_dax_dev ${dax_dev}
+check_not_dax_dev ${region} ${dax_dev}
 check_extent_cnt ${region} 0
 
 
@@ -205,6 +224,7 @@ echo "Removing Partial : $partial_ext_dpa $partial_ext_length"
 remove_extent ${serial} ${test_dc_region_id} ${partial_ext_dpa} ${partial_ext_length}
 check_extent_cnt ${region} 1
 destroy_dax_dev ${dax_dev}
+check_not_dax_dev ${region} ${dax_dev}
 check_extent_cnt ${region} 0
 
 
@@ -220,9 +240,18 @@ echo "Removing multiple in span : $partial_ext_dpa $partial_ext_length"
 remove_extent ${serial} ${test_dc_region_id} ${partial_ext_dpa} ${partial_ext_length}
 check_extent_cnt ${region} 2
 destroy_dax_dev ${dax_dev}
+check_not_dax_dev ${region} ${dax_dev}
 check_extent_cnt ${region} 0
 
+inject_extent ${serial} ${test_dc_region_id} ${test_ext_offset[0]} ${test_ext_length[0]} ${test_tag}
+inject_extent ${serial} ${test_dc_region_id} ${test_ext_offset[1]} ${test_ext_length[1]} ${test_tag}
+check_extent_cnt ${region} 2
+
 destroy_region ${region}
+
+# region should come down even with extents
+check_not_region ${region}
+
 
 
 echo "IKW TEST PASSED!!!!!"
