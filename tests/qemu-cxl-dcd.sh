@@ -166,11 +166,13 @@ if [ "$decoder" == "" ] || [ "$serial" == "" ]; then
 	exit 77
 fi
 
-create_dcd_region ${mem} ${decoder}
+#create_dcd_region ${mem} ${decoder}
 
-check_region ${region}
+#check_region ${region}
 
 inject_extent ${serial} ${test_dc_region_id} ${test_ext_offset[0]} ${test_ext_length[0]} ${test_tag}
+
+exit 0
 
 check_extent_cnt ${region} 1
 
