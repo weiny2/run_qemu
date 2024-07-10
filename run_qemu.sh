@@ -55,7 +55,7 @@ cxl_addr="0x4c00000000"
 cxl_backend_size="512M"
 cxl_t3_size="256M"
 cxl_dcd_size="4G"
-cxl_label_size="1K"
+cxl_label_size="4K"
 
 num_build_cpus="$(($(getconf _NPROCESSORS_ONLN) + 1))"
 rsync_opts=("--delete" "--exclude=.git/" "--exclude=build/" "-L" "-r")
