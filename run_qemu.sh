@@ -1170,8 +1170,10 @@ setup_cxl()
 	# ie: X must be equal in: sn=pX id=cxl-pmemX
 	# ie: X must be equal in: sn=vX id=cxl-vmemX
 	for (( i = 0; i < 4; i++ )); do
+		dcd_str=""
 		if ((i < 2)); then
 			bus_str="bus=hb$((i/2))rp$((i%2))"
+			dcd_str="num-dc-regions=2,volatile-dc-memdev=cxl-dc-mem$i,"
 		else
 			bus_str="bus=swport$((i-2))"
 		fi
@@ -1184,8 +1186,8 @@ setup_cxl()
 			id_str="id=cxl-vmem$i"
 #		fi
 		sn_str="sn=$i"
-		dcd_str="num-dc-regions=2,volatile-dc-memdev=cxl-dc-mem$i"
-		qcmd+=("-device" "cxl-type3,$bus_str,$mem_str,$dcd_str,$id_str,$lsa_str,$sn_str")
+#		dcd_str="num-dc-regions=2,volatile-dc-memdev=cxl-dc-mem$i"
+		qcmd+=("-device" "cxl-type3,$bus_str,$mem_str,$dcd_str$id_str,$lsa_str,$sn_str")
 	done
 
 # Old DC additions.
